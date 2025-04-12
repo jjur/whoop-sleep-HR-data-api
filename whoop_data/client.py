@@ -5,11 +5,16 @@ import os
 import requests
 from typing import Dict, Any, Optional, List
 from dotenv import load_dotenv
+import time
 
 from whoop_data.endpoints import Endpoints
+from whoop_data.logger import get_logger
 
 # Load environment variables if available
 load_dotenv()
+
+# Get logger instance
+logger = get_logger()
 
 
 class WhoopClient:
@@ -37,6 +42,7 @@ class WhoopClient:
         self.password = password or os.getenv("WHOOP_PASSWORD")
         
         if not self.username or not self.password:
+            logger.error("Whoop credentials not provided")
             raise ValueError(
                 "Whoop credentials not provided. Use arguments or set WHOOP_USERNAME and WHOOP_PASSWORD environment variables."
             )
@@ -44,6 +50,8 @@ class WhoopClient:
         self.userid: Optional[str] = None
         self.access_token: Optional[str] = None
         self.api_version = "7"
+        
+        logger.info("WhoopClient initialized")
         
         # Authenticate on initialization
         self.authenticate()
@@ -55,28 +63,43 @@ class WhoopClient:
         Raises:
             Exception: If authentication fails
         """
+        logger.info("Authenticating with Whoop API")
+        
+        auth_data = {
+            "grant_type": "password",
+            "issueRefresh": False,
+            "password": self.password,
+            "username": self.username,
+        }
+        
+        # Log request (with sensitive data redacted)
+        safe_auth_data = auth_data.copy()
+        safe_auth_data["password"] = "[REDACTED]"
+        logger.log_request("POST", Endpoints.AUTH, data=safe_auth_data)
+        
+        start_time = time.time()
         # Post credentials
         response = requests.post(
             Endpoints.AUTH,
-            json={
-                "grant_type": "password",
-                "issueRefresh": False,
-                "password": self.password,
-                "username": self.username,
-            },
+            json=auth_data,
         )
+        elapsed = time.time() - start_time
+        
+        # Log response
+        logger.log_response(response.status_code, Endpoints.AUTH, elapsed)
         
         # Exit if authentication fails
         if response.status_code != 200:
-            print(f"Authentication failed: {response.status_code}")
-            print(f"Response: {response.text}")
+            error_msg = f"Authentication failed: {response.status_code}"
+            logger.error(error_msg)
+            logger.error(f"Response: {response.text}")
             raise Exception(f"Authentication failed: Credentials rejected")
 
         # Extract and store authentication data
         auth_data = response.json()
         self.userid = auth_data["user"]["id"]
         self.access_token = auth_data["access_token"]
-        print(f"Successfully authenticated user {self.userid}")
+        logger.info(f"Successfully authenticated user {self.userid}")
     
     def get_auth_header(self) -> dict:
         """
@@ -86,6 +109,7 @@ class WhoopClient:
             dict: Authorization header
         """
         if not self.access_token:
+            logger.info("Access token not available, authenticating")
             self.authenticate()
             
         return {
@@ -103,7 +127,7 @@ class WhoopClient:
             bool: True if token was refreshed, False otherwise
         """
         if response.status_code in [401, 403]:
-            print("Token expired or invalid, refreshing...")
+            logger.info("Token expired or invalid, refreshing...")
             self.authenticate()
             return True
         return False
@@ -142,6 +166,10 @@ class WhoopClient:
         
         retry_count = 0
         while retry_count < max_retries:
+            # Log the request
+            logger.log_request(method, url, params, headers, json_data)
+            
+            start_time = time.time()
             response = requests.request(
                 method=method,
                 url=url,
@@ -149,19 +177,31 @@ class WhoopClient:
                 json=json_data,
                 headers=headers
             )
+            elapsed = time.time() - start_time
+            
+            # Log the response
+            try:
+                content = response.json() if response.content else None
+            except:
+                content = response.text if response.content else None
+                
+            logger.log_response(response.status_code, url, elapsed, content)
             
             # If unauthorized, try refreshing token and retry
             if response.status_code in [401, 403]:
                 if self.refresh_if_needed(response):
                     headers = self.get_auth_header()
                     retry_count += 1
+                    logger.info(f"Retrying request ({retry_count}/{max_retries})")
                     continue
             
             # Return response for all other cases
             return response
             
         # If we've exhausted retries
-        raise Exception(f"Request failed after {max_retries} retries")
+        error_msg = f"Request failed after {max_retries} retries"
+        logger.error(error_msg)
+        raise Exception(error_msg)
     
     def get_sleep_event(self, activity_id: str) -> Dict[str, Any]:
         """
@@ -176,6 +216,7 @@ class WhoopClient:
         Raises:
             Exception: If request fails
         """
+        logger.info(f"Getting sleep event data for activity ID: {activity_id}")
         response = self._make_request(
             method="GET",
             url=Endpoints.SLEEP_EVENT,
@@ -183,9 +224,12 @@ class WhoopClient:
         )
         
         if response.status_code == 200:
+            logger.debug(f"Successfully retrieved sleep event data for activity ID: {activity_id}")
             return response.json()
         else:
-            raise Exception(f"Failed to get sleep event: {response.status_code} - {response.text}")
+            error_msg = f"Failed to get sleep event: {response.status_code} - {response.text}"
+            logger.error(error_msg)
+            raise Exception(error_msg)
     
     def get_sleep_vow(self, cycle_id: str) -> Dict[str, Any]:
         """
@@ -200,13 +244,17 @@ class WhoopClient:
         Raises:
             Exception: If request fails
         """
+        logger.info(f"Getting sleep vow data for cycle ID: {cycle_id}")
         url = f"{Endpoints.SLEEP_VOW}/{cycle_id}"
         response = self._make_request(method="GET", url=url)
         
         if response.status_code == 200:
+            logger.debug(f"Successfully retrieved sleep vow data for cycle ID: {cycle_id}")
             return response.json()
         else:
-            raise Exception(f"Failed to get sleep vow: {response.status_code} - {response.text}")
+            error_msg = f"Failed to get sleep vow: {response.status_code} - {response.text}"
+            logger.error(error_msg)
+            raise Exception(error_msg)
     
     def get_cycles(self, 
                   start_time: str, 
@@ -226,6 +274,7 @@ class WhoopClient:
         Raises:
             Exception: If request fails
         """
+        logger.info(f"Getting cycle data from {start_time} to {end_time}")
         url = f"{Endpoints.CYCLES}/{self.userid}"
         params = {
             "startTime": start_time,
@@ -236,9 +285,13 @@ class WhoopClient:
         response = self._make_request(method="GET", url=url, params=params)
         
         if response.status_code == 200:
-            return response.json()
+            data = response.json()
+            logger.info(f"Successfully retrieved {len(data)} cycle records")
+            return data
         else:
-            raise Exception(f"Failed to get cycles: {response.status_code} - {response.text}")
+            error_msg = f"Failed to get cycles: {response.status_code} - {response.text}"
+            logger.error(error_msg)
+            raise Exception(error_msg)
     
     def get_heart_rate(self, 
                       start: str, 
@@ -250,7 +303,7 @@ class WhoopClient:
         Args:
             start: Start time in ISO format
             end: End time in ISO format
-            step: Time step in seconds (default: 600 = 10 minutes)
+            step: Time step in seconds
             
         Returns:
             Dict: Heart rate data
@@ -258,6 +311,7 @@ class WhoopClient:
         Raises:
             Exception: If request fails
         """
+        logger.info(f"Getting heart rate data from {start} to {end}")
         url = f"{Endpoints.HEART_RATE}/{self.userid}"
         params = {
             "start": start,
@@ -270,6 +324,9 @@ class WhoopClient:
         response = self._make_request(method="GET", url=url, params=params)
         
         if response.status_code == 200:
+            logger.debug(f"Successfully retrieved heart rate data from {start} to {end}")
             return response.json()
         else:
-            raise Exception(f"Failed to get heart rate data: {response.status_code} - {response.text}") 
+            error_msg = f"Failed to get heart rate data: {response.status_code} - {response.text}"
+            logger.error(error_msg)
+            raise Exception(error_msg) 

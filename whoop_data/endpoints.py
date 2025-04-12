@@ -29,3 +29,6 @@ class Endpoints:
     
     # Heart rate endpoints
     HEART_RATE = f"{BASE_PROD}/metrics-service/v1/metrics/user" 
+
+    # Recovery endpoints
+    RECOVERY_VOW = f"{BASE_PROD}/vow-service/v1/vows/recovery/1d/cycle"
