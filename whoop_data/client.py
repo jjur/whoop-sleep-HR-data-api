@@ -154,9 +154,7 @@ class WhoopClient:
         Raises:
             Exception: If request fails after max retries
         """
-        # Ensure we have valid params
-        if params is None:
-            params = {}
+        params = params or {}
             
         # Always include API version
         if "apiVersion" not in params:
@@ -301,27 +299,25 @@ class WhoopClient:
         Get heart rate data for a time range.
         
         Args:
-            start: Start time in ISO format
-            end: End time in ISO format
-            step: Time step in seconds
+            start: Start date/time in ISO format
+            end: End date/time in ISO format
+            step: Time step in seconds (6, 60, or 600)
             
         Returns:
             Dict: Heart rate data
-            
-        Raises:
-            Exception: If request fails
         """
-        logger.info(f"Getting heart rate data from {start} to {end}")
-        url = f"{Endpoints.HEART_RATE}/{self.userid}"
-        params = {
-            "start": start,
-            "end": end,
-            "name": "heart_rate",
-            "order": "t",
-            "step": step
-        }
+        logger.info(f"Getting heart rate data from {start} to {end} with step {step}")
         
-        response = self._make_request(method="GET", url=url, params=params)
+        url = f"{Endpoints.HEART_RATE}/{self.userid}/heart-rate"
+        response = self._make_request(
+            method="GET",
+            url=url,
+            params={
+                "start": start,
+                "end": end,
+                "step": step
+            }
+        )
         
         if response.status_code == 200:
             logger.debug(f"Successfully retrieved heart rate data from {start} to {end}")
