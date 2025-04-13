@@ -18,13 +18,13 @@ A simple Python library to access Whoop's internal web app API for extracting sl
 ## Installation
 
 ```bash
-# From PyPI
+# From PyPI (available soon)
 pip install whoop-data
 
 # From source
 git clone https://github.com/jjur/whoop-sleep-HR-data-api.git
 cd whoop-sleep-HR-data-api
-pip install -r requirements.txt .
+pip install -e .
 ```
 
 ## Quick Start
