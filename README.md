@@ -7,22 +7,24 @@ A simple Python library to access Whoop's internal web app API for extracting sl
 ## Features
 
 - Authenticate with Whoop using your account credentials
-- Extract detailed sleep data including sleep stages, disturbances, and metrics
-- Extract heart rate data with customizable time intervals
-- Simple, user-friendly API that follows DRY and KISS principles
-- Easy-to-use command line interface
-- Environment variable support for credentials
+- Extract data from app.whoop.com using internal API:
+  - Sleep data including sleep stages, disturbances, and metrics
+  - Heart rate data with customizable time intervals
+
+### Not yet implemented
+- Reading of all Activies
+- Whoop recommendations / VOWs
 
 ## Installation
 
 ```bash
-# From PyPI (coming soon)
+# From PyPI
 pip install whoop-data
 
 # From source
-git clone https://github.com/yourusername/whoop-sleep-HR-data-api.git
+git clone https://github.com/jjur/whoop-sleep-HR-data-api.git
 cd whoop-sleep-HR-data-api
-pip install -e .
+pip install -r requirements.txt .
 ```
 
 ## Quick Start
@@ -47,7 +49,7 @@ hr_data = get_heart_rate_data(
     client=client,
     start_date="2023-01-01",
     end_date="2023-01-07",
-    step=300  # 5 minutes
+    step=60  # 60 seconds / 1 minute
 )
 ```
 
@@ -76,57 +78,28 @@ WHOOP_PASSWORD=your_password
 See the `examples/` directory for more usage examples:
 
 - `examples/simple_example.py`: Minimal example showing basic usage
-- `examples/get_heart_rate_data.py`: Example of extracting heart rate data
-- `examples/get_sleep_data.py`: Example of extracting sleep data
-- `examples/get_all_data.py`: Example of extracting both sleep and heart rate data
-- `examples/process_data.py`: Example of processing and visualizing data
+- `examples/process_data.py`: Example of processing and visualizing HR data
+- `examples/process_sleep.py`: Example of Sleep data and visualizing hypnogram
 
-## Data Processing Example
+Here are some example visualizations from Whoop data:
 
-The library makes it easy to analyze your data:
+![Heart Rate Plot](assets/heart_rate_plot.png)
+*Example heart rate visualization showing 30 hours of data while writing this repo :)*
 
-```python
-import pandas as pd
-import matplotlib.pyplot as plt
-from whoop_data import WhoopClient, get_heart_rate_data
+![Sleep Hypnogram](assets/sleep_hypnogram.png) 
+*Sleep stages hypnogram generated from sleep data*
 
-# Get data
-client = WhoopClient()
-hr_data = get_heart_rate_data(client)
+## Contributing
 
-# Convert to pandas DataFrame
-df = pd.DataFrame(hr_data)
-df['timestamp'] = pd.to_datetime(df['timestamp'])
-df.set_index('timestamp', inplace=True)
+Contributions are welcome! Here are some ways you can contribute:
 
-# Calculate statistics
-avg_hr = df['heart_rate'].mean()
-max_hr = df['heart_rate'].max()
-min_hr = df['heart_rate'].min()
+- Report bugs or changes in API by raising an issue
+- Implement missing features like activities, recovery, VOWs
 
-print(f"Average HR: {avg_hr:.1f} bpm, Max: {max_hr} bpm, Min: {min_hr} bpm")
-
-# Create a visualization
-plt.figure(figsize=(10, 5))
-plt.plot(df.index, df['heart_rate'])
-plt.title('Heart Rate Over Time')
-plt.ylabel('Heart Rate (bpm)')
-plt.grid(True)
-plt.savefig('heart_rate_chart.png')
-```
-
-## Library Structure
-
-The library is organized into modules for easy maintenance and extensibility:
-
-- `whoop_data/client.py`: Combined client for authentication and API access
-- `whoop_data/endpoints.py`: Centralized API endpoints
-- `whoop_data/data.py`: Data processing functions
-
-## License
-
-MIT License - See LICENSE file for details.
 
 ## Disclaimer
 
 This project is not affiliated with, endorsed by, or connected to Whoop in any way. It is an independent project that uses the Whoop web app's internal API for data extraction. The API endpoints may change without notice.
+
+## Acknowledgements
+There are some github projects for reading the data, but they are a couple years old and the underlaying unofficial api structure changed over time. Then there is official dev api from Whoop, but they only provide aggregated information, which is not as cool as the raw hear rate in my opinion. Authentication logic and data relationships I got from [https://github.com/rharber/whoop_scraper/tree/master](rharber/whoop_scraper) repo. 
