@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="whoop-data",
-    version="0.1.0",
+    version="1.0.0",
     author="Juraj Vasek",
     author_email="your.email@example.com",
     description="A library to extract sleep and heart rate data from Whoop WebApp API",
