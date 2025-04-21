@@ -18,7 +18,7 @@ A simple Python library to access Whoop's internal web app API for extracting sl
 ## Installation
 
 ```bash
-# From PyPI (available soon)
+# From PyPI
 pip install whoop-data
 
 # From source
