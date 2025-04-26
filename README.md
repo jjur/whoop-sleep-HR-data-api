@@ -53,6 +53,27 @@ hr_data = get_heart_rate_data(
 )
 ```
 
+### Sleep Data
+
+Retrieving sleep data works in a similar way:
+
+```python
+from whoop_data import WhoopClient, get_sleep_data
+
+# Create a client
+client = WhoopClient(username="your_email@example.com", password="your_password")
+
+# Get sleep data for the last 7 days (default)
+sleep_data = get_sleep_data(client=client)
+
+# Or specify a date range
+sleep_data = get_sleep_data(
+    client=client,
+    start_date="2023-01-01",
+    end_date="2023-01-07"
+)
+```
+
 ## Command Line Usage
 
 ```bash
@@ -102,4 +123,4 @@ Contributions are welcome! Here are some ways you can contribute:
 This project is not affiliated with, endorsed by, or connected to Whoop in any way. It is an independent project that uses the Whoop web app's internal API for data extraction. The API endpoints may change without notice.
 
 ## Acknowledgements
-There are some github projects for reading the data, but they are a couple years old and the underlaying unofficial api structure changed over time. Then there is official dev api from Whoop, but they only provide aggregated information, which is not as cool as the raw hear rate in my opinion. Authentication logic and data relationships I got from [rharber/whoop_scraper](https://github.com/rharber/whoop_scraper/tree/master) repo. 
+There are some github projects for reading the data, but they are a couple years old and the underlaying unofficial api structure changed over time. Then there is official dev api from Whoop, but they only provide aggregated information, which is not as cool as the raw hear rate in my opinion. Authentication logic and data relationships I got from [rharber/whoop_scraper](https://github.com/rharber/whoop_scraper/tree/master) repo.
