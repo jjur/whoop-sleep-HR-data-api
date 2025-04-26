@@ -1,4 +1,4 @@
-# Whoop Data API
+# Whoop HeartRate and Sleep Python API
 
 A simple Python library to access Whoop's internal web app API for extracting sleep and heart rate data.
 
@@ -18,7 +18,7 @@ A simple Python library to access Whoop's internal web app API for extracting sl
 ## Installation
 
 ```bash
-# From PyPI (available soon)
+# From PyPI
 pip install whoop-data
 
 # From source
@@ -102,4 +102,4 @@ Contributions are welcome! Here are some ways you can contribute:
 This project is not affiliated with, endorsed by, or connected to Whoop in any way. It is an independent project that uses the Whoop web app's internal API for data extraction. The API endpoints may change without notice.
 
 ## Acknowledgements
-There are some github projects for reading the data, but they are a couple years old and the underlaying unofficial api structure changed over time. Then there is official dev api from Whoop, but they only provide aggregated information, which is not as cool as the raw hear rate in my opinion. Authentication logic and data relationships I got from [https://github.com/rharber/whoop_scraper/tree/master](rharber/whoop_scraper) repo. 
+There are some github projects for reading the data, but they are a couple years old and the underlaying unofficial api structure changed over time. Then there is official dev api from Whoop, but they only provide aggregated information, which is not as cool as the raw hear rate in my opinion. Authentication logic and data relationships I got from [rharber/whoop_scraper](https://github.com/rharber/whoop_scraper/tree/master) repo. 
