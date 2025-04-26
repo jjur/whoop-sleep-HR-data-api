@@ -308,14 +308,15 @@ class WhoopClient:
         """
         logger.info(f"Getting heart rate data from {start} to {end} with step {step}")
         
-        url = f"{Endpoints.HEART_RATE}/{self.userid}/heart-rate"
+        url = f"{Endpoints.HEART_RATE}/{self.userid}"
         response = self._make_request(
             method="GET",
             url=url,
             params={
                 "start": start,
                 "end": end,
-                "step": step
+                "step": step,
+                "name": "heart_rate",   
             }
         )
         
