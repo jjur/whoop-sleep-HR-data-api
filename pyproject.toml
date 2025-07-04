@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "whoop-data"
-version = "0.2.2"
+version = "0.3.0"
 description = "Extract sleep and heart rate data from Whoop WebApp API (unofficial)"
 readme = "README.md"
 authors = [
