@@ -1,0 +1,26 @@
+# Legacy login endpoint DEPRECATED
+
+POST https://api-7.whoop.com/oauth/token
+Content-Type: application/json
+
+{
+    "grant_type": "password",
+    "issueRefresh": false,
+    "password": "PSW",
+    "username": "email"
+}
+
+### New login endpoint
+
+POST https://api.prod.whoop.com/auth-service/v2/whoop/sign-in
+Content-Type: application/json
+
+{
+  "username": "email",
+  "password": "PSW"
+}
+
+### Get user ID
+GET https://api.prod.whoop.com/auth-service/v2/user
+Authorization: Bearer {{token}}
+
