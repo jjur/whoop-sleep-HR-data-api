@@ -47,8 +47,9 @@ class WhoopClient:
                 "Whoop credentials not provided. Use arguments or set WHOOP_USERNAME and WHOOP_PASSWORD environment variables."
             )
             
-        self.userid: Optional[str] = None
         self.access_token: Optional[str] = None
+        self.refresh_token: Optional[str] = None
+        self.userid: Optional[str] = None
         self.api_version = "7"
         
         logger.info("WhoopClient initialized")
@@ -66,10 +67,8 @@ class WhoopClient:
         logger.info("Authenticating with Whoop API")
         
         auth_data = {
-            "grant_type": "password",
-            "issueRefresh": False,
-            "password": self.password,
             "username": self.username,
+            "password": self.password,
         }
         
         # Log request (with sensitive data redacted)
@@ -97,9 +96,31 @@ class WhoopClient:
 
         # Extract and store authentication data
         auth_data = response.json()
-        self.userid = auth_data["user"]["id"]
         self.access_token = auth_data["access_token"]
+        self.refresh_token = auth_data["refresh_token"]
+        
+        # Get user ID from profile endpoint
+        self._get_user_id()
         logger.info(f"Successfully authenticated user {self.userid}")
+    
+    def _get_user_id(self) -> None:
+        """Get user ID from profile endpoint."""
+        logger.debug("Fetching user ID from profile endpoint")
+        
+        if not self.access_token:
+            raise Exception("Access token not available")
+            
+        headers = {"Authorization": f"Bearer {self.access_token}"}
+        response = requests.get(Endpoints.USER, headers=headers)
+        
+        if response.status_code == 200:
+            user_data = response.json()
+            self.userid = user_data["user"]["id"]
+            logger.debug(f"Retrieved user ID: {self.userid}")
+        else:
+            error_msg = f"Failed to get user profile: {response.status_code} - {response.text}"
+            logger.error(error_msg)
+            raise Exception(error_msg)
     
     def get_auth_header(self) -> dict:
         """

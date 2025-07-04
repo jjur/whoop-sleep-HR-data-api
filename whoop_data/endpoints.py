@@ -18,7 +18,8 @@ class Endpoints:
     BASE_PROD = "https://api.prod.whoop.com"
     
     # Authentication
-    AUTH = f"{BASE_API}/oauth/token"
+    AUTH = f"{BASE_PROD}/auth-service/v2/whoop/sign-in"
+    USER = f"{BASE_PROD}/auth-service/v2/user"
     
     # Sleep endpoints
     SLEEP_EVENT = f"{BASE_PROD}/sleep-service/v1/sleep-events/v1-passthrough"

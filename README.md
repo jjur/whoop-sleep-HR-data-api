@@ -1,5 +1,7 @@
 # Whoop HeartRate and Sleep Python API
 
+> Updated July 2025 to use new login API endpoint
+
 A simple Python library to access Whoop's internal web app API for extracting sleep and heart rate data.
 
 > **Note**: This is an unofficial library based on reverse-engineered API endpoints and is not affiliated with or endorsed by Whoop. The API endpoints may change without notice.
