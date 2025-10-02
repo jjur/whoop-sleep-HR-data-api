@@ -22,7 +22,7 @@ class Endpoints:
     USER = f"{BASE_PROD}/auth-service/v2/user"
     
     # Sleep endpoints
-    SLEEP_EVENT = f"{BASE_PROD}/sleep-service/v1/sleep-events/v1-passthrough"
+    SLEEP_EVENT = f"{BASE_PROD}/sleep-service/v1/sleep-events"
     SLEEP_VOW = f"{BASE_PROD}/vow-service/v1/vows/sleep/1d/cycle"
     
     # Activity endpoints (BFF - Backend for Frontend)
