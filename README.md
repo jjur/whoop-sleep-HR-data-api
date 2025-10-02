@@ -11,12 +11,12 @@ A simple Python library to access Whoop's internal web app API for extracting sl
 
 - Authenticate with Whoop using your account credentials
 - Extract data from app.whoop.com using internal API:
+  - **Comprehensive Cycle Data** (NEW!) - Recovery, sleep, strain, and activities in one call
   - Sleep data including sleep stages, disturbances, and metrics
-  - Heart rate data with customizable time intervals
+  - Heart rate data with customizable time intervals (6 seconds, 1 minute, or 10 minutes)
+  - Activity/workout data including strain, heart rate zones, and performance metrics
+  - Sports history - list of all sports/activities tracked
 
-### Not yet implemented
-- Reading of all Activies
-- Whoop recommendations / VOWs
 
 ## Installation
 
@@ -77,6 +77,29 @@ sleep_data = get_sleep_data(
 )
 ```
 
+### Comprehensive Cycle Data
+
+Get all your metrics in one call - recovery, sleep, strain, and activities:
+
+```python
+from whoop_data import WhoopClient, get_cycle_data
+
+# Create a client
+client = WhoopClient(username="your_email@example.com", password="your_password")
+
+# Get comprehensive cycle data
+cycles = get_cycle_data(client=client, start_date="2023-01-01", end_date="2023-01-07")
+
+# Access all metrics
+for cycle in cycles:
+    print(f"Date: {cycle['date']}")
+    print(f"Recovery Score: {cycle['recovery']['score']}%")
+    print(f"HRV: {cycle['recovery']['hrv']} ms")
+    print(f"Sleep Score: {cycle['sleep'][0]['score']}%")
+    print(f"Day Strain: {cycle['strain']['day_strain']}")
+    print(f"Workouts: {len(cycle['workouts'])}")
+```
+
 ## Command Line Usage
 
 ```bash
@@ -92,16 +115,21 @@ python main.py --username your_email@example.com --password your_password --data
 
 You can also store your credentials in a `.env` file:
 
-```
+```bash
 WHOOP_USERNAME=your_email@example.com
 WHOOP_PASSWORD=your_password
 ```
+
+## Documentation
+
+- [USER_GUIDE.md](USER_GUIDE.md) - Detailed documentation of all API response formats with examples
 
 ## Examples
 
 See the `examples/` directory for more usage examples:
 
 - `examples/simple_example.py`: Minimal example showing basic usage
+- `examples/comprehensive_data_example.py`: Example showing all metrics (recovery, sleep, strain, workouts)
 - `examples/process_data.py`: Example of processing and visualizing HR data
 - `examples/process_sleep.py`: Example of Sleep data and visualizing hypnogram
 
@@ -110,7 +138,7 @@ Here are some example visualizations from Whoop data:
 ![Heart Rate Plot](assets/heart_rate_plot.png)
 *Example heart rate visualization showing 30 hours of data while writing this repo :)*
 
-![Sleep Hypnogram](assets/sleep_hypnogram.png) 
+![Sleep Hypnogram](assets/sleep_hypnogram.png)
 *Sleep stages hypnogram generated from sleep data*
 
 ## Contributing
@@ -120,10 +148,10 @@ Contributions are welcome! Here are some ways you can contribute:
 - Report bugs or changes in API by raising an issue
 - Implement missing features like activities, recovery, VOWs
 
-
 ## Disclaimer
 
 This project is not affiliated with, endorsed by, or connected to Whoop in any way. It is an independent project that uses the Whoop web app's internal API for data extraction. The API endpoints may change without notice.
 
 ## Acknowledgements
+
 There are some github projects for reading the data, but they are a couple years old and the underlaying unofficial api structure changed over time. Then there is official dev api from Whoop, but they only provide aggregated information, which is not as cool as the raw hear rate in my opinion. Authentication logic and data relationships I got from [rharber/whoop_scraper](https://github.com/rharber/whoop_scraper/tree/master) repo.
