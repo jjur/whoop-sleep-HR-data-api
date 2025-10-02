@@ -22,11 +22,12 @@ class Endpoints:
     USER = f"{BASE_PROD}/auth-service/v2/user"
     
     # Sleep endpoints
-    SLEEP_EVENT = f"{BASE_PROD}/sleep-service/v1/sleep-events/v1-passthrough"
+    SLEEP_EVENT = f"{BASE_PROD}/sleep-service/v1/sleep-events"
     SLEEP_VOW = f"{BASE_PROD}/vow-service/v1/vows/sleep/1d/cycle"
     
-    # Activity endpoints
-    CYCLES = f"{BASE_PROD}/activities-service/v1/cycles/aggregate/range"
+    # Activity endpoints (NEW BFF endpoint)
+    CYCLES = f"{BASE_PROD}/core-details-bff/v0/cycles/details"
+    # Old endpoint (deprecated): f"{BASE_PROD}/activities-service/v1/cycles/aggregate/range"
     
     # Heart rate endpoints
     HEART_RATE = f"{BASE_PROD}/metrics-service/v1/metrics/user" 
