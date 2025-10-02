@@ -155,3 +155,5 @@ This project is not affiliated with, endorsed by, or connected to Whoop in any w
 ## Acknowledgements
 
 There are some github projects for reading the data, but they are a couple years old and the underlaying unofficial api structure changed over time. Then there is official dev api from Whoop, but they only provide aggregated information, which is not as cool as the raw hear rate in my opinion. Authentication logic and data relationships I got from [rharber/whoop_scraper](https://github.com/rharber/whoop_scraper/tree/master) repo.
+
+*[AIDA (AI Disclosure Acknowledgement)](https://github.com/markwk/aida)*: Primarily Human. The following written content was written by me with the assistance of an AI-based system (CursorAI). Project started initially by me reverse engineering the flow pair programming with AI to create pypi library. Further updates use AI more as it is a lot faster at adapting to new endpoints and changes in API schema of Whoop App.
