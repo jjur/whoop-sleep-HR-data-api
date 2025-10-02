@@ -314,6 +314,28 @@ class WhoopClient:
             logger.error(error_msg)
             raise Exception(error_msg)
     
+    def get_sports_history(self) -> List[Dict[str, Any]]:
+        """
+        Get list of all sports/activities the user has tracked.
+        
+        Returns:
+            List: Sports history data
+            
+        Raises:
+            Exception: If request fails
+        """
+        logger.info("Getting sports history")
+        response = self._make_request(method="GET", url=Endpoints.SPORTS_HISTORY)
+        
+        if response.status_code == 200:
+            data = response.json()
+            logger.info(f"Successfully retrieved sports history")
+            return data
+        else:
+            error_msg = f"Failed to get sports history: {response.status_code} - {response.text}"
+            logger.error(error_msg)
+            raise Exception(error_msg)
+    
     def get_heart_rate(self, 
                       start: str, 
                       end: str, 

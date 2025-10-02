@@ -14,7 +14,7 @@ from whoop_data import (
 set_debug_logging()
 
 # Create a client (you can also use environment variables WHOOP_USERNAME and WHOOP_PASSWORD)
-client = WhoopClient(username="EMAIL", password="PASSWORD")
+client = WhoopClient(username="your_email@example.com", password="your_password")
 
 # Get heart rate data for the default time range (last 7 days)
 hr_data = get_heart_rate_data(client=client, start_date="2025-04-06", end_date="2025-04-07")

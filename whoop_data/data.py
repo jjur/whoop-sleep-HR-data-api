@@ -78,6 +78,142 @@ def get_date_range(start_date: Optional[str] = None, end_date: Optional[str] = N
     return start_iso, end_iso
 
 
+def get_cycle_data(client: WhoopClient,
+                   start_date: Optional[str] = None,
+                   end_date: Optional[str] = None) -> List[Dict[str, Any]]:
+    """
+    Get comprehensive cycle data including recovery, sleep, strain, and activity metrics.
+    
+    This function exposes all the rich data from the cycles BFF endpoint including:
+    - Recovery metrics (HRV, resting HR, recovery score)
+    - Sleep metrics (score, quality, duration, efficiency, respiratory rate, sleep need)
+    - Strain metrics (day strain, max HR, average HR, calories)
+    - Activity details (workouts with types, duration, strain)
+    
+    Example:
+        >>> from whoop_data import WhoopClient, get_cycle_data
+        >>> client = WhoopClient(username="your_email@example.com", password="your_password")
+        >>> cycles = get_cycle_data(client, "2023-01-01", "2023-01-07")
+        >>> for cycle in cycles:
+        ...     print(f"Date: {cycle['date']}")
+        ...     print(f"Recovery: {cycle['recovery']['score']}%")
+        ...     print(f"HRV: {cycle['recovery']['hrv']}")
+        ...     print(f"Sleep Score: {cycle['sleep']['score']}%")
+        ...     print(f"Day Strain: {cycle['strain']['day_strain']}")
+    
+    Args:
+        client: WhoopClient instance
+        start_date: Start date in YYYY-MM-DD format
+        end_date: End date in YYYY-MM-DD format
+        
+    Returns:
+        list: List of cycle records with comprehensive metrics
+    """
+    logger.info(f"Getting comprehensive cycle data for date range: start={start_date}, end={end_date}")
+    
+    # Get formatted date range
+    start_iso, end_iso = get_date_range(start_date, end_date)
+    logger.info(f"Fetching cycle data from {start_iso} to {end_iso}")
+    
+    # Get cycles for the date range
+    cycles_response = client.get_cycles(start_time=start_iso, end_time=end_iso)
+    
+    # Extract the actual cycle records from the response
+    if isinstance(cycles_response, dict) and 'records' in cycles_response:
+        cycles = cycles_response.get('records', [])
+    else:
+        cycles = cycles_response
+        
+    logger.info(f"Retrieved {len(cycles)} cycles")
+    
+    # Process and structure the data
+    cycle_data = []
+    
+    for cycle_record in cycles:
+        if not isinstance(cycle_record, dict) or 'cycle' not in cycle_record:
+            continue
+            
+        cycle = cycle_record.get('cycle', {})
+        sleeps = cycle_record.get('sleeps', [])
+        
+        # Parse the date range from the 'days' field
+        days = cycle.get('days', '')
+        date = days.replace("['", "").replace("')", "").split("','")[0] if days else ""
+        
+        # Extract recovery metrics
+        recovery_data = {
+            'score': cycle_record.get('score'),  # Recovery score
+            'hrv': cycle_record.get('hrv_rmssd_milli'),  # HRV in milliseconds
+            'resting_hr': cycle_record.get('resting_heart_rate'),  # Resting heart rate
+        }
+        
+        # Extract sleep metrics from sleep events
+        sleep_metrics = []
+        for sleep_event in sleeps:
+            sleep_metrics.append({
+                'activity_id': sleep_event.get('activity_id'),
+                'score': sleep_event.get('score'),
+                'quality_duration': sleep_event.get('quality_duration'),  # milliseconds
+                'latency': sleep_event.get('latency'),  # milliseconds
+                'disturbances': sleep_event.get('disturbances'),
+                'time_in_bed': sleep_event.get('time_in_bed'),  # milliseconds
+                'light_sleep_duration': sleep_event.get('light_sleep_duration'),  # milliseconds
+                'slow_wave_sleep_duration': sleep_event.get('slow_wave_sleep_duration'),  # milliseconds
+                'rem_sleep_duration': sleep_event.get('rem_sleep_duration'),  # milliseconds
+                'wake_duration': sleep_event.get('wake_duration'),  # milliseconds
+                'sleep_efficiency': sleep_event.get('sleep_efficiency'),  # percentage
+                'respiratory_rate': sleep_event.get('respiratory_rate'),  # breaths per minute
+                'sleep_need': sleep_event.get('sleep_need'),  # milliseconds
+                'debt_pre': sleep_event.get('debt_pre'),  # milliseconds
+                'debt_post': sleep_event.get('debt_post'),  # milliseconds
+                'during': sleep_event.get('during'),
+                'timezone_offset': sleep_event.get('timezone_offset'),
+            })
+        
+        # Extract strain metrics
+        strain_data = {
+            'day_strain': cycle.get('scaled_strain'),
+            'day_avg_heart_rate': cycle.get('day_avg_heart_rate'),
+            'day_max_heart_rate': cycle.get('day_max_heart_rate'),
+            'day_kilojoules': cycle.get('day_kilojoules'),
+            'intensity_score': cycle.get('intensity_score'),
+        }
+        
+        # Extract activity/workout data
+        workouts = cycle_record.get('workouts', [])
+        activity_data = []
+        for workout in workouts:
+            activity_data.append({
+                'id': workout.get('id'),
+                'sport_id': workout.get('sport_id'),
+                'during': workout.get('during'),
+                'strain': workout.get('score'),
+                'avg_heart_rate': workout.get('average_heart_rate'),
+                'max_heart_rate': workout.get('max_heart_rate'),
+                'kilojoules': workout.get('kilojoules'),
+                'distance_meter': workout.get('distance_meter'),
+                'altitude_gain_meter': workout.get('altitude_gain_meter'),
+                'altitude_change_meter': workout.get('altitude_change_meter'),
+                'zone_duration': workout.get('zone_duration'),  # Time in each HR zone
+            })
+        
+        # Compile the comprehensive record
+        cycle_data.append({
+            'date': date,
+            'cycle_id': cycle.get('id'),
+            'days': days,
+            'during': cycle.get('during'),
+            'timezone_offset': cycle.get('timezone_offset'),
+            'recovery': recovery_data,
+            'sleep': sleep_metrics,
+            'strain': strain_data,
+            'workouts': activity_data,
+        })
+    
+    logger.info(f"Successfully processed {len(cycle_data)} cycle records")
+    return cycle_data
+
+
 def get_sleep_data(client: WhoopClient, 
                   start_date: Optional[str] = None, 
                   end_date: Optional[str] = None) -> List[Dict[str, Any]]:
