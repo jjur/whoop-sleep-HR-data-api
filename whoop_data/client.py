@@ -224,7 +224,7 @@ class WhoopClient:
     
     def get_sleep_event(self, activity_id: str) -> Dict[str, Any]:
         """
-        Get detailed sleep event data.
+        Get detailed sleep event data using the new sleep-events endpoint.
         
         Args:
             activity_id: Sleep activity ID
@@ -280,7 +280,7 @@ class WhoopClient:
                   end_time: str, 
                   limit: int = 26) -> List[Dict[str, Any]]:
         """
-        Get cycle data for a date range.
+        Get cycle data for a date range using the new BFF endpoint.
         
         Args:
             start_time: Start time in ISO format
@@ -294,18 +294,20 @@ class WhoopClient:
             Exception: If request fails
         """
         logger.info(f"Getting cycle data from {start_time} to {end_time}")
-        url = f"{Endpoints.CYCLES}/{self.userid}"
+        # New endpoint uses query parameters instead of path parameters
         params = {
+            "id": self.userid,
             "startTime": start_time,
             "endTime": end_time,
             "limit": limit
         }
         
-        response = self._make_request(method="GET", url=url, params=params)
+        response = self._make_request(method="GET", url=Endpoints.CYCLES, params=params)
         
         if response.status_code == 200:
             data = response.json()
-            logger.info(f"Successfully retrieved {len(data)} cycle records")
+            # The new BFF endpoint returns data in a different format
+            logger.info(f"Successfully retrieved cycle data")
             return data
         else:
             error_msg = f"Failed to get cycles: {response.status_code} - {response.text}"
